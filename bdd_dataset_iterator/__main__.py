@@ -43,7 +43,7 @@ def main(args):
     pcd = o3d.geometry.PointCloud()
 
 
-    for index in range(len(dataset)//10, len(dataset), 10):
+    for index in range(0, len(dataset), 10):
         frame = dataset[index]
         print(frame.keys())
         rgb_frame = frame["rgb_frame"]      # (H, W, 3) uint8
@@ -57,6 +57,12 @@ def main(args):
 
         cv2.imshow("BDD Dataset", visual_small)
 
+        # Points min and max distances
+        print("x: ", points[:, 0].min(), points[:, 0].max())
+        print("y: ", points[:, 1].min(), points[:, 1].max())
+        print("z: ", points[:, 2].min(), points[:, 2].max())
+
+
         points = points[::10, :]
         points_colors = points_colors[::10, :]
 
@@ -65,6 +71,15 @@ def main(args):
         # Swap x, y axes
         # points[:, [0, 1]] = points[:, [1, 0]]
 
+        # Filter points which are more than 30 units from the origin
+        distances = np.sqrt(np.sum(points**2, axis=1))
+        mask = distances <= 0.005
+        points = points[mask]
+        points_colors = points_colors[mask]
+
+        print("x: ", points[:, 0].min(), points[:, 0].max())
+        print("y: ", points[:, 1].min(), points[:, 1].max())
+        print("z: ", points[:, 2].min(), points[:, 2].max())
 
         pcd.points = o3d.utility.Vector3dVector(points)
         pcd.colors = o3d.utility.Vector3dVector(points_colors)
